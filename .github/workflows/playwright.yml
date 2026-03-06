@@ -25,3 +25,27 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Zip Project
+      run: zip -r playwright.zip . -x "node_modules/*" -x "playwright-report/*" -x "test-results/*"
+
+    - name: Terraform Init & Apply
+      working-directory: ./terraform
+      run: |
+          terraform init
+          terraform apply -auto-approve
+      env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+
+    - name: Upload Playwright Artifacts to S3
+    uses: jakejarvis/s3-sync-action@v0.6.0
+    with:
+        args: --acl private
+          
+    env:
+          AWS_S3_BUCKET: playwright-ci-artifacts-123456/${{ github.run_id }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          SOURCE_DIR: ./playwright.zip
