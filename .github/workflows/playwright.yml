@@ -24,7 +24,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test --headed=false
 
       - name: Zip Project
         run: zip -r playwright.zip . -x "node_modules/*" "playwright-report/*" "test-results/*"
